@@ -44,19 +44,21 @@ class MySpider(scrapy.Spider):
                     './td[3]/font/text()').extract()
                 item['url'] = line.xpath(
                     './td[1]/font/a/@href').extract()
+                # 当标签中需要进行重新发送请求的时候使用Request进行yield返回
                 request = scrapy.Request(self.start_urls[1]  + item['url'][0], callback=self.parse_page2)
                 request.meta['item'] = item
                 # yield item
                 yield request
 
-
+    # 编写第二次爬虫的解析函数
     def parse_page2(self, response):
+        # 从第一次爬虫传递回来的数据
         item = response.meta['item']
         result = response.xpath('//pre')
         item_1 = SmartdbItem()
         sq_data = ''
         na_data = ''
-        tmp_sq = ''
+        # 遍历出所有的标签数据，获取目的数据
         for i in range(1,100):
             tmp_sq = result.xpath("./a[%s]/text()"%(i)).extract()
 
@@ -73,6 +75,8 @@ class MySpider(scrapy.Spider):
 
         # print('sq_data:',sq_data)
         # print('na_data:',na_data)
+
+        # 拼接完数据后，进行yield返回
         item_1['accession_number'] = str(item['accession_number'][0])
         item_1['name'] = str(item['name'][0])
         item_1['species'] = str(item['species'][0])
